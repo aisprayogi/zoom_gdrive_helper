@@ -7,8 +7,10 @@ import os
 import sys
 import keys
 import urllib.parse
+import csv
 
-def get_meeting_uuids(email, token):
+
+def get_meeting_infos(email, token):
     conn = http.client.HTTPSConnection("api.zoom.us")
     headers = { 'authorization': "Bearer "+ token}
     conn.request("GET", "/v2/users/"+email+"/recordings?trash_type=meeting_recordings&mc=false&page_size=30", headers=headers)
@@ -16,24 +18,56 @@ def get_meeting_uuids(email, token):
     res = conn.getresponse()
     data = res.read()
 
-    uuids = []
+    meeting_infos = []
     string = data.decode('utf-8')
     data = json.loads(string)
     if(data["total_records"]>0):
         meetings = data["meetings"]
         for meeting in meetings:
-            uuids.append(meeting["uuid"])
-    print(uuids)
-    return uuids
+            tanggal = dateutil.parser.isoparse(meeting["start_time"]).strftime("%m-%d")
+            meeting_info = {"uuid": meeting["uuid"], "topic":meeting["topic"], "date":tanggal}
+            meeting_infos.append(meeting_info)
+    print(meeting_infos)
+    return meeting_infos
+
+def generate_report(meeting_info, token):
+    conn = http.client.HTTPSConnection("api.zoom.us")
+    headers = { 'authorization': "Bearer "+ token}
+    conn.request("GET", "/v2/past_meetings/"+ urllib.parse.quote(urllib.parse.quote(meeting_info["uuid"],""),"") +"/participants?page_size=100", headers=headers)
+
+    res = conn.getresponse()
+    
+    data = res.read()
+    string = data.decode('utf-8')
+    data = json.loads(string)
+    participants = data["participants"]
+    unique_participants = { each['name'] : each for each in participants }.values()
+    print(unique_participants)
+
+    csv_columns = ['id','name','user_email']
+
+    csv_file = meeting_info["topic"]+ "-" + meeting_info["date"]+".csv"
+    try:
+        with open(csv_file, 'w') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=csv_columns)
+            writer.writeheader()
+            for data in unique_participants:
+                writer.writerow(data)
+    except IOError:
+        print("I/O error")
+    
 
 def delete_recordings(email, token):
-    uuids = get_meeting_uuids(email, token)
-    for uuid in uuids:
+    meeting_infos = get_meeting_infos(email, token)
+    for meeting_info in meeting_infos:
+        #generate participant meeting first
+        generate_report(meeting_info,token)
+        
         conn = http.client.HTTPSConnection("api.zoom.us")
 
         headers = { 'authorization': "Bearer "+ token}
 
-        conn.request("DELETE", "/v2/meetings/"+ urllib.parse.quote(urllib.parse.quote(uuid,""),"") +"/recordings?action=trash", headers=headers)
+        conn.request("DELETE", "/v2/meetings/"+ urllib.parse.quote(urllib.parse.quote(meeting_info["uuid"],""),"") +"/recordings?action=trash", headers=headers)
 
         res = conn.getresponse()
         #print(urllib.parse.quote(urllib.parse.quote(uuid,""),""))
