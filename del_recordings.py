@@ -1,6 +1,6 @@
 import http.client
 import json
-#import re
+import re
 
 import dateutil.parser
 import os
@@ -42,11 +42,14 @@ def generate_report(meeting_info, token):
     data = json.loads(string)
     participants = data["participants"]
     unique_participants = { each['name'] : each for each in participants }.values()
-    print(unique_participants)
+    #print(unique_participants)
 
     csv_columns = ['id','name','user_email']
 
-    csv_file = meeting_info["topic"]+ "-" + meeting_info["date"]+".csv"
+    topic = re.sub('[^A-Za-z0-9 ]', '', meeting_info["topic"])
+    csv_file = topic + "-" + meeting_info["date"]+".csv"
+    if (os.path.isfile("./"+csv_file)):
+        csv_file = topic + "-" + meeting_info["date"]+ "_1.csv"
     try:
         with open(csv_file, 'w') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=csv_columns)
@@ -77,6 +80,6 @@ def delete_recordings(email, token):
         #print(data.decode("utf-8"))
 
 
-delete_recordings(keys.email1, keys.token1)
+#delete_recordings(keys.email1, keys.token1)
 delete_recordings(keys.email2, keys.token2)
 

@@ -1,6 +1,6 @@
 import http.client
 import json
-#import re
+import re
 
 import dateutil.parser
 import os
@@ -17,6 +17,7 @@ def download_by_user(email, token):
 
     string = data.decode('utf-8')
     data = json.loads(string)
+    fileIndex = 0
     if(data["total_records"]>0):
         meetings = data["meetings"]
         for meeting in meetings:
@@ -26,8 +27,11 @@ def download_by_user(email, token):
             str_tanggal = tanggal.strftime("%d%m%Y")
             
             files = meeting["recording_files"]
+            fileIndex = fileIndex + 1
             for file in files:
                 if (file["recording_type"] == "shared_screen_with_speaker_view" ):
+                    
+                    print(fileIndex)
                     url_download = file["download_url"]+"?access_token="+token
                     #logging.info(url_download)
                     if(topic.startswith("Cloud A")):
@@ -46,6 +50,15 @@ def download_by_user(email, token):
                         file_prefix = "CNE_UNHAS_REKAMAN_"
                         file_suffix = "_B"
                         folder = "/root/CCNA/'Kelas B'/"
+                    else:
+                        file_prefix = topic.replace(" ","_")
+                        regex = re.compile('[^a-zA-Z]')
+                        file_prefix = regex.sub('', file_prefix)
+                        file_suffix = "_"+str(fileIndex)
+                        if (email == "fga.unhas2@gmail.com"):
+                            folder = "/root/CCNA/"
+                        else:
+                            folder = "root/CC/"
                     nama_file = file_prefix+str_tanggal+file_suffix
                     nama_skrip = file_prefix+ file_suffix +".sh" 
                     f = open(nama_skrip, "w")
