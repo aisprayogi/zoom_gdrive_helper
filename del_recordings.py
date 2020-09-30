@@ -47,9 +47,10 @@ def generate_report(meeting_info, token):
     csv_columns = ['id','name','user_email']
 
     topic = re.sub('[^A-Za-z0-9 ]', '', meeting_info["topic"])
-    csv_file = topic + "-" + meeting_info["date"]+".csv"
-    if (os.path.isfile("./"+csv_file)):
-        csv_file = topic + "-" + meeting_info["date"]+ "_1.csv"
+    csv_file = "./Zoom_Report/"+topic + "-" + meeting_info["date"]+".csv"
+
+    if (os.path.isfile("./Zoom_Report/"+csv_file)):
+        csv_file = "./Zoom_Report/"+topic + "-" + meeting_info["date"]+ "_1.csv"
     try:
         with open(csv_file, 'w') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=csv_columns)
@@ -80,6 +81,6 @@ def delete_recordings(email, token):
         #print(data.decode("utf-8"))
 
 
-#delete_recordings(keys.email1, keys.token1)
+delete_recordings(keys.email1, keys.token1)
 delete_recordings(keys.email2, keys.token2)
 
