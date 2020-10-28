@@ -23,7 +23,8 @@ python3 del_recordings.py
 #sync attendance report with google drive
 mv *.csv Zoom_Report
 
-rclone copy Zoom_Report/ aisgmail:"20-FGA-Universitas Hasanuddin"/"Absensi"/"Zoom_Report" -P --drive-shared-with-me 
+rclone copy Zoom_Report/ aisgmail:"20-FGA-Universitas Hasanuddin"/"Absensi"/"Zoom_Report" --drive-shared-with-me 
+
 #delete bash file
 rm /root/*UNHAS_REKAMAN*.sh
 rm Zoom_Report/*.csv

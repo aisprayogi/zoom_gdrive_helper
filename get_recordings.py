@@ -29,6 +29,7 @@ def download_by_user(email, token):
             files = meeting["recording_files"]
             fileIndex = fileIndex + 1
             for file in files:
+                #print(file)
                 if (file["recording_type"] == "shared_screen_with_speaker_view" ):
                     
                     print(fileIndex)
