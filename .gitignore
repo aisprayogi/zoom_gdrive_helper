@@ -1,3 +1,5 @@
-keys.py
+secrets.py
 CC
 CCNA
+.vscode
+__pycache__
